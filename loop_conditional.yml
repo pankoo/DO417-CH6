@@ -1,0 +1,26 @@
+---
+- name: IIS and other tools are installed
+  hosts: win1.example.com
+  tasks:
+
+    - name: Disk facts are gathered
+      win_disk_facts:
+
+    - name: Install IIS and other tools
+      win_feature:
+        name: "{{ item }}"
+          - Web-Server
+          - Web-Custom-Logging
+          - Web-Log-Libraries
+          - Web-Request-Monitor
+          - Web-Http-Tracing
+          - Web-Mgmt-Tools
+        state: present
+      when: size_remaining >= minimum_bytes
+      vars:
+        minimum_bytes: "{{ '10GB' | human_to_bytes }}"
+        first_volume: "{{ ansible_facts.disks[0].partitions[0].volumes[0] }}"
+        size_remaining: "{{ first_volume.size_remaining }}"
+  
+    - name: Server is rebooted
+      win_reboot:
