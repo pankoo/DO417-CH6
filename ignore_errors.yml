@@ -1,0 +1,34 @@
+---
+- name: Tesing ignore errors and failed when
+  hosts: win1.example.com
+  tasks:
+
+    - name: IIS package is installed
+      win_feature:
+        name: Web-Server
+        state: present
+
+    - name: Web service is started
+      win_service:
+        name: W3Svc
+        state: started
+
+    - name: Deploy web page
+      win_copy:
+        content: "Hello from DO417"
+        dest: C:\Inetpub\wwwroot\index.html
+
+    - name: Dead-Application is installed
+      win_feature:
+        name: Dead-Application
+        state: present
+      ignore_errors: yes
+
+
+    - name: Test web page access
+      win_uri:
+        url: http://win1.example.com
+        return_content: yes
+      register: webpage
+      failed_when: webpage.content != "Ansible Tower Rocks!"
+
